@@ -5,7 +5,7 @@
 [![Live Web Application](https://img.shields.io/badge/Live%20Demo-Cloudflare%20Pages-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://enterprise-document-intelligence.pages.dev)
 [![Vector Database](https://img.shields.io/badge/Database-Supabase%20pgvector-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
 [![Cloud LLM](https://img.shields.io/badge/Cloud%20LLM-Groq%20Cloud-F05032?style=for-the-badge&logo=fastapi&logoColor=white)](https://console.groq.com)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg?style=for-the-badge)](LICENSE)
 
 ---
 
@@ -189,4 +189,4 @@ python tests/verify_live_e2e_random.py
 ---
 
 ## 📄 License
-This project is open-source under the [MIT License](LICENSE).
+This project is licensed under the strict copyleft **GNU Affero General Public License v3.0 (AGPL-3.0)**. See the [LICENSE](LICENSE) file for complete details.
