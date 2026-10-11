@@ -60,3 +60,86 @@ def test_zip_slip_prevention():
 
     with pytest.raises(FileValidationError):
         zip_handler.extract_files(zip_bytes)
+
+
+def test_docx_extractor():
+    import docx
+    from app.processing.extractors.docx_extractor import DOCXExtractor
+
+    doc = docx.Document()
+    doc.add_paragraph("Enterprise Strategy Q4 Report.")
+    table = doc.add_table(rows=1, cols=2)
+    table.rows[0].cells[0].text = "Revenue"
+    table.rows[0].cells[1].text = "$100M"
+    buf = io.BytesIO()
+    doc.save(buf)
+    docx_bytes = buf.getvalue()
+
+    extractor = DOCXExtractor()
+    res = extractor.extract(docx_bytes, "report.docx")
+    assert "Enterprise Strategy Q4 Report." in res.text
+    assert "Revenue | $100M" in res.text
+    assert res.metadata["paragraph_count"] >= 1
+    assert res.metadata["table_count"] == 1
+
+
+def test_pptx_extractor():
+    from pptx import Presentation
+    from app.processing.extractors.pptx_extractor import PPTXExtractor
+
+    prs = Presentation()
+    slide = prs.slides.add_slide(prs.slide_layouts[0])
+    title = slide.shapes.title
+    title.text = "Q4 Executive Presentation"
+    buf = io.BytesIO()
+    prs.save(buf)
+    pptx_bytes = buf.getvalue()
+
+    extractor = PPTXExtractor()
+    res = extractor.extract(pptx_bytes, "deck.pptx")
+    assert "Q4 Executive Presentation" in res.text
+    assert res.metadata["slide_count"] == 1
+
+
+def test_xlsx_extractor():
+    import openpyxl
+    from app.processing.extractors.xlsx_extractor import XLSXExtractor
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Financials"
+    ws.append(["Metric", "Value"])
+    ws.append(["Gross Margin", "85%"])
+    buf = io.BytesIO()
+    wb.save(buf)
+    xlsx_bytes = buf.getvalue()
+
+    extractor = XLSXExtractor()
+    res = extractor.extract(xlsx_bytes, "sheets.xlsx")
+    assert "Gross Margin | 85%" in res.text
+    assert res.metadata["sheet_count"] == 1
+
+
+def test_pdf_extractor():
+    import fitz
+    from app.processing.extractors.pdf_extractor import PDFExtractor
+
+    doc = fitz.open()
+    page = doc.new_page()
+    page.insert_text((50, 72), "Confidential Enterprise Audit Blueprint and Security Baseline.")
+    pdf_bytes = doc.tobytes()
+
+    extractor = PDFExtractor()
+    res = extractor.extract(pdf_bytes, "audit.pdf")
+    assert "Confidential Enterprise Audit Blueprint" in res.text
+    assert res.metadata["page_count"] == 1
+
+
+def test_extraction_service_routing():
+    from app.services.extraction_service import ExtractionService
+
+    service = ExtractionService()
+    res = service.process_file(b"This is a plain markdown document with English words.", "notes.md")
+    assert "plain markdown document" in res.text
+    assert res.metadata["detected_language"] in ("en", "unknown")
+

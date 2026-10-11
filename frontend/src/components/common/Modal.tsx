@@ -1,7 +1,7 @@
 import { ReactNode, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 
-type ModalSize = 'sm' | 'md' | 'lg';
+type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
 
 interface ModalProps {
   isOpen: boolean;
@@ -15,6 +15,7 @@ const SIZE_MAP: Record<ModalSize, string> = {
   sm: 'max-w-sm',
   md: 'max-w-lg',
   lg: 'max-w-2xl',
+  xl: 'max-w-3xl',
 };
 
 export default function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalProps) {
@@ -42,7 +43,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs px-4 animate-in fade-in duration-150"
       aria-modal="true"
       role="dialog"
       aria-labelledby="modal-title"
@@ -52,22 +53,22 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
         ref={panelRef}
         tabIndex={-1}
         className={[
-          'relative w-full bg-white rounded-xl shadow-2xl flex flex-col outline-none max-h-[90vh]',
+          'relative w-full bg-white rounded-2xl shadow-dropdown border border-slate-200/90 flex flex-col outline-none max-h-[90vh] animate-in zoom-in-95 duration-150',
           SIZE_MAP[size],
         ].join(' ')}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-          <h2 id="modal-title" className="text-base font-semibold text-slate-800">{title}</h2>
+        <div className="flex items-center justify-between px-6 py-4.5 border-b border-slate-100">
+          <h2 id="modal-title" className="text-base font-semibold text-slate-900">{title}</h2>
           <button
             onClick={onClose}
             aria-label="Close modal"
-            className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+            className="p-1.5 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
           >
             <X size={16} />
           </button>
         </div>
-        <div className="overflow-y-auto flex-1 px-6 py-4">{children}</div>
+        <div className="overflow-y-auto flex-1 px-6 py-5">{children}</div>
       </div>
     </div>
   );

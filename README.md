@@ -1,6 +1,24 @@
-# Enterprise Document Intelligence Platform
+# 🏢 Enterprise Document Intelligence Platform
 
-A local-first, multi-tenant enterprise document intelligence platform featuring asynchronous document processing, OCR fallback, token-aware chunking, local vector search (`pgvector`), PostgreSQL full-text search, hybrid Reciprocal Rank Fusion (RRF), cross-encoder reranking, and local RAG chat with verifiable document citations.
+> **A Production-Grade, Local-First & 24/7 Cloud Hybrid Document Intelligence Engine with Grounded RAG, pgvector Hybrid Retrieval, and Multi-Tenant Isolation.**
+
+[![Live Web Application](https://img.shields.io/badge/Live%20Demo-Cloudflare%20Pages-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://enterprise-document-intelligence.pages.dev)
+[![Vector Database](https://img.shields.io/badge/Database-Supabase%20pgvector-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
+[![Cloud LLM](https://img.shields.io/badge/Cloud%20LLM-Groq%20Cloud-F05032?style=for-the-badge&logo=fastapi&logoColor=white)](https://console.groq.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
+
+---
+
+## 🌐 Live Deployments & Endpoints
+
+| Service / Interface | Live URL | Description | Ongoing Cost |
+| :--- | :--- | :--- | :---: |
+| **Production Web UI** | [https://enterprise-document-intelligence.pages.dev](https://enterprise-document-intelligence.pages.dev) | Responsive (Mobile & Laptop) Executive Dashboard | **₹0 Forever** |
+| **Direct Authentication** | [https://enterprise-document-intelligence.pages.dev/login](https://enterprise-document-intelligence.pages.dev/login) | Argon2id + JWT Secure Login & Registration | **₹0 Forever** |
+| **Deployment Alias** | [https://84557472.enterprise-document-intelligence.pages.dev](https://84557472.enterprise-document-intelligence.pages.dev) | Immutable Production Build Alias | **Included** |
+| **Vector DB (Supabase)** | [Database Dashboard](https://supabase.com/dashboard/project/aeseryhjqjcsxprrmoib) | PostgreSQL 16 + native `pgvector` in `ap-south-1` Mumbai | **₹0 Forever** |
+| **Fast LLM Inference** | [Groq Cloud Console](https://console.groq.com/home) | Sub-500ms RAG answer synthesis (`openai/gpt-oss-20b`) | **₹0 Free Tier** |
+| **Local Backend API** | `http://127.0.0.1:8000/docs` | Interactive OpenAPI 3.1 Swagger & ReDoc UI | **Local** |
 
 ---
 
@@ -8,229 +26,167 @@ A local-first, multi-tenant enterprise document intelligence platform featuring 
 
 ```mermaid
 flowchart TD
-    Client["Client (Web / Mobile / API)"]
-    FastAPI["FastAPI App (API Router v1)"]
-    Auth["JWT Auth & RBAC Middleware"]
-    Storage["LocalStorageProvider\n(storage/organizations/...)"]
-    DB[(PostgreSQL 16\n+ pgvector + TSVector)]
-    Redis[(Redis 7 Cache / Broker)]
-    Celery["Celery Worker"]
-    
-    Extractors["Multi-Format Extractors\n(PyMuPDF, docx, pptx, xlsx, bs4, eml)"]
-    OCR["Tesseract OCR Fallback\n(pytesseract)"]
-    Chunker["Token-Aware Chunkers\n(tiktoken / SentenceBoundary / Markdown)"]
-    Embedder["Local HuggingFace Embeddings\n(all-MiniLM-L6-v2, 384-dim)"]
-    Reranker["CrossEncoder Reranker\n(ms-marco-MiniLM-L-6-v2)"]
-    LLM["Local Ollama LLM\n(llama3.2:1b)"]
+    subgraph Clients["Multi-Device Clients"]
+        Web["Laptop / Desktop Browser\n(React 18 + Tailwind)"]
+        Mobile["Mobile Smartphone\n(Responsive Drawer UI)"]
+        API["External Integrations\n(Argon2 Scoped API Keys)"]
+    end
 
-    Client -->|HTTP Request / X-Request-ID| FastAPI
-    FastAPI --> Auth
-    Auth --> DB
-    FastAPI -->|Store Raw Uploads| Storage
-    FastAPI -->|Queue Async Ingestion Task| Redis
-    Redis --> Celery
-    
-    Celery -->|1. Extract Text| Extractors
-    Extractors -->|2. Low Text Quality Fallback| OCR
-    Celery -->|3. Token-Aware Chunking| Chunker
-    Celery -->|4. Batch Embedding| Embedder
-    Celery -->|5. Index Vector + FTS| DB
+    subgraph CDN["Edge & Delivery"]
+        CF["Cloudflare Pages CDN\n(Global Anycast Edge)"]
+    end
 
-    Client -->|GET /api/v1/search| FastAPI
-    FastAPI -->|Hybrid Vector + FTS Search| DB
-    DB -->|Reciprocal Rank Fusion| Reranker
-    
-    Client -->|POST /api/v1/chat| FastAPI
-    FastAPI -->|Hybrid Retrieval| DB
-    FastAPI -->|Grounded Evidence Context| LLM
-    LLM -->|Answer + Citations| Client
+    subgraph Backend["FastAPI Core Engine (Python 3.12)"]
+        Router["API Router v1\n(/auth, /documents, /search, /chat, /audit)"]
+        AuthMid["JWT Auth & Multi-Tenant RBAC\n(OWNER, ADMIN, EDITOR, VIEWER)"]
+        Audit["Immutable Audit Logger\n(Credential Redaction)"]
+        Worker["Celery Worker / Async Ingestion Engine"]
+    end
+
+    subgraph Processing["Document Processing Pipeline"]
+        Extractors["Multi-Format Extractors\n(PyMuPDF, docx, pptx, xlsx, bs4, eml)"]
+        OCR["Page-Level OCR Fallback\n(Tesseract OCR Engine)"]
+        Chunker["Token-Aware Chunking\n(tiktoken Sliding Window + Markdown)"]
+        Embedder["Local SentenceTransformer\n(all-MiniLM-L6-v2, 384-dim)"]
+    end
+
+    subgraph StorageEngine["Storage & Vector Data Layer"]
+        Supabase[(Supabase PostgreSQL 16\n+ pgvector HNSW + FTS TSVector)]
+        DocStore["Local Document Vault\n(storage/orgs/.../v_...)"]
+    end
+
+    subgraph AI["Intelligence & Retrieval"]
+        RRF["Reciprocal Rank Fusion\n(RRF k=60 + Cross-Encoder Reranker)"]
+        LLM["Groq Cloud LLM\n(Fallback: Local Ollama llama3.2)"]
+    end
+
+    Web --> CF
+    Mobile --> CF
+    CF --> Router
+    API --> Router
+
+    Router --> AuthMid
+    AuthMid --> Audit
+    Router --> Worker
+
+    Worker --> Extractors
+    Extractors -->|Scanned Pages| OCR
+    Worker --> Chunker
+    Chunker --> Embedder
+    Embedder -->|Dense Vectors| Supabase
+    Worker -->|Raw File| DocStore
+
+    Router -->|Hybrid Search| RRF
+    RRF --> Supabase
+    Router -->|RAG Question| LLM
+    LLM -->|Grounded Answer + Citations| Router
 ```
 
 ---
 
-## 🔥 Key Features
+## 🔥 Key Enterprise Features
 
-* **100% Free & Local Execution**: Runs entirely on your local machine without requiring paid API keys (No OpenAI, AWS, or cloud vendor lock-in).
-* **Multi-Tenant Data Isolation**: Strict organization-level boundaries enforced at the database query level *before* any ranking or retrieval operations occur.
-* **Role-Based Access Control (RBAC)**: Fine-grained permissions (`OWNER`, `ADMIN`, `EDITOR`, `VIEWER`).
-* **Multi-Format Extraction Engine**: Extracts text from PDF, DOCX, PPTX, XLSX, HTML, EML, TXT, Markdown, PNG, JPG, JPEG, and ZIP archives.
-* **Page-Level OCR Fallback**: Automatic detection of scanned or low-quality PDF pages, invoking Tesseract OCR for affected pages only.
-* **Safe ZIP Extraction**: Zip Slip / path traversal protection, maximum file count, depth, and decompression size enforcement.
-* **Token-Aware Chunking**: Configurable `tiktoken` sliding window, sentence-boundary, and markdown section chunking strategies.
-* **Hybrid Semantic Retrieval**: PostgreSQL `pgvector` vector similarity search combined with `TSVector` GIN full-text search via **Reciprocal Rank Fusion (RRF)** ($k=60$) and optional CrossEncoder reranking (`ms-marco-MiniLM-L-6-v2`).
-* **Grounded Local RAG Chat**: Local LLM integration via **Ollama** producing verifiable document source citations (`document_id`, `document_name`, `version`, `page`, `chunk_id`) with built-in prompt injection defense.
-* **API Key Management**: SHA-256 hashed API keys (`edip_live_...`) with expiration dates, revocation, and scope control.
-* **Audit Logging & Observability**: Append-only audit trail logging system events without exposing credentials, coupled with `X-Request-ID` tracing, structured JSON logging, and `/health/ready` readiness checks.
-
----
-
-## 🛠 Technology Stack
-
-* **Backend Framework**: Python 3.12, FastAPI, Pydantic v2, Uvicorn
-* **Database & Vector Store**: PostgreSQL 16, `pgvector`, SQLAlchemy 2.0 Async, Alembic
-* **Background Tasks & Queue**: Celery 5.3, Redis 7
-* **Authentication**: JWT Access & Refresh Tokens, Argon2 Password Hashing
-* **Document Processing & OCR**: PyMuPDF (`fitz`), `python-docx`, `python-pptx`, `openpyxl`, `BeautifulSoup4`, `pytesseract`, Tesseract OCR
-* **Embeddings & Search**: `sentence-transformers/all-MiniLM-L6-v2` (384-dim), `cross-encoder/ms-marco-MiniLM-L-6-v2`, PostgreSQL Full-Text Search
-* **Local LLM**: Ollama (`llama3.2:1b`)
-* **Testing & Quality**: Pytest, Pytest-Asyncio, HTTPX
+* **📱 Multi-Device Adaptive Interface**: Fully responsive on both laptop screens and mobile phones with off-canvas sliding navigation, touch controls, and compact prompt chips.
+* **🛡️ Zero-Trust Multi-Tenant Isolation**: Hard query-level organization isolation across all database operations, documents, chunks, and search vectors. Cross-tenant access attempts return HTTP 403.
+* **🔍 Hybrid Semantic Search**:
+  * **Dense Vector Search**: 384-dimensional cosine similarity via `pgvector` HNSW indexes.
+  * **Lexical Keyword Search**: PostgreSQL Full-Text Search with `english` dictionary stemming and GIN indexing.
+  * **Reciprocal Rank Fusion (RRF)**: Merges sparse and dense scores ($k=60$) followed by Cross-Encoder neural reranking (`ms-marco-MiniLM-L-6-v2`).
+* **🤖 Grounded RAG AI Assistant**:
+  * Groq Cloud ultra-fast inference with local Ollama fallback.
+  * Verifiable source citations down to document filename, page number, and chunk ID.
+  * Prompt injection defense and strict contextual boundaries.
+* **📑 Multi-Format Parsing & OCR**:
+  * Extracts PDF, DOCX, PPTX, XLSX, HTML, EML, TXT, Markdown, PNG, JPG, and ZIP archives.
+  * Page-level Tesseract OCR fallback for scanned documents and low-text density pages.
+  * Zip Slip security mitigation against directory traversal attacks.
+* **🔐 Scoped API Keys & Audit Trail**:
+  * Argon2id / SHA-256 hashed keys (`edip_live_...`) with scope restrictions (`read:documents`, `write:documents`, `search`, `chat`).
+  * Immutable audit log trail capturing all organizational actions with automatic credential redaction.
+* **💸 100% Free Forever Architecture**: Runs indefinitely on Supabase Free Tier, Groq Cloud Free Tier, and Cloudflare Pages Free Tier with zero credit card requirements.
 
 ---
 
-## 📁 Directory Structure
+## 🛠 Tech Stack
 
-```
-.
-├── app/
-│   ├── api/v1/             # FastAPI Endpoint Handlers (auth, orgs, projects, docs, search, chat, api_keys, health)
-│   ├── core/               # Configuration, security, logging, exceptions, dependencies
-│   ├── db/                 # Async database session & base declarative models
-│   ├── middleware/         # RequestContextMiddleware for X-Request-ID correlation
-│   ├── models/             # SQLAlchemy database models (User, Org, Project, Document, Chunk, Job, APIKey, AuditLog)
-│   ├── processing/         # Extraction engine, extractors, OCR fallback, language detection, text normalization
-│   ├── providers/          # Embeddings (HuggingFace), LLM (Ollama), Rerank (CrossEncoder), Storage (Local)
-│   ├── repositories/       # Multi-tenant isolated database repositories
-│   ├── schemas/            # Pydantic request and response schemas
-│   ├── services/           # Domain business logic services
-│   └── workers/            # Celery application & asynchronous background tasks
-├── alembic/                # Database migration scripts & env configuration
-├── tests/                  # Pytest test suite (auth, orgs, tenant isolation, chunking, search)
-├── Dockerfile              # Docker container image with Python 3.12 & Tesseract OCR
-├── docker-compose.yml      # Multi-container orchestra (API, Postgres pgvector, Redis, Celery Worker)
-├── requirements.txt        # Python package dependencies
-└── .env.example            # Environment settings template
-```
+* **Frontend**: React 18, TypeScript, Tailwind CSS, TanStack React Query, Lucide Icons, Vite
+* **Backend API**: Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2.0 Async, Alembic
+* **Vector DB**: Supabase PostgreSQL 16, `pgvector`, HNSW indexes, PgBouncer pooler
+* **Document Extraction**: PyMuPDF (`pymupdf`), `python-docx`, `python-pptx`, `openpyxl`, `beautifulsoup4`, `pytesseract`
+* **Embeddings & Reranking**: `sentence-transformers/all-MiniLM-L6-v2`, `cross-encoder/ms-marco-MiniLM-L-6-v2`
+* **LLM Providers**: Groq Cloud API (`openai/gpt-oss-20b`), Ollama (`llama3.2:1b`)
+* **Background Tasks**: Celery 5.3, Redis 7 (with standalone async task fallback)
+* **Hosting**: Cloudflare Pages (Edge CDN, SSL/TLS, SPA routing)
 
 ---
 
-## 🚀 Quick Start (Local Docker Compose)
+## 🚀 Getting Started Locally
 
-### 1. Prerequisites
-Ensure you have the following installed locally:
-* [Docker Desktop](https://www.docker.com/) (with Docker Compose)
-* [Ollama](https://ollama.ai/) (Optional for RAG Chat)
-
-### 2. Configure Environment Variables
-Copy `.env.example` to `.env`:
+### 1. Clone the Repository
 ```bash
-cp .env.example .env
+git clone https://github.com/rithvikkaki/Enterprise-Document-Intelligence-Assistant.git
+cd Enterprise-Document-Intelligence-Assistant
 ```
 
-### 3. Launch Platform Containers
-Run Docker Compose:
-```bash
-docker compose up --build -d
+### 2. Environment Configuration
+Create a `.env` file in the root directory:
+```env
+# Database (Supabase PostgreSQL / PgBouncer pooler or local PostgreSQL)
+DATABASE_URL=postgresql+asyncpg://postgres.<REF>:<PASSWORD>@aws-0-ap-south-1.pooler.supabase.com:6543/postgres?ssl=require
+
+# Cloud AI (Groq Cloud) or Local LLM (Ollama)
+GROQ_API_KEY=your_groq_api_key_here
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=llama3.2:1b
+
+# Security
+SECRET_KEY=generate_a_secure_random_hex_string_here
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+REFRESH_TOKEN_EXPIRE_DAYS=7
+
+# Redis / Celery (Optional - falls back to async background tasks)
+REDIS_URL=redis://localhost:6379/0
 ```
 
-This starts four isolated services:
-1. `edip_postgres`: PostgreSQL 16 database with `pgvector` extension (Port `5432`).
-2. `edip_redis`: Redis 7 broker & cache (Port `6379`).
-3. `edip_api`: FastAPI application server (Port `8000`).
-4. `edip_celery_worker`: Celery worker processing document ingestion pipelines.
-
-### 4. Run Database Migrations
-Apply database migrations using Alembic inside the API container:
+### 3. Install Backend Dependencies & Run Migrations
 ```bash
-docker compose exec api alembic upgrade head
+python -m venv venv
+venv\Scripts\activate      # On Windows
+source venv/bin/activate   # On Linux/macOS
+
+pip install -r requirements.txt
+alembic upgrade head
 ```
+
+### 4. Start the FastAPI Server
+```bash
+uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+```
+Swagger UI will be accessible at: `http://127.0.0.1:8000/docs`
+
+### 5. Start Frontend Development Server
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Open `http://localhost:5173` in your browser.
 
 ---
 
-## 🤖 Setting Up Local Ollama for RAG Chat (Optional)
+## 🧪 Testing & Verification
 
-1. Install Ollama from [ollama.ai](https://ollama.ai).
-2. Download a lightweight local model:
-   ```bash
-   ollama pull llama3.2:1b
-   ```
-3. Start the Ollama local daemon:
-   ```bash
-   ollama serve
-   ```
-> *Note: Document upload, OCR extraction, text chunking, vector indexing, and hybrid search work 100% independently without requiring Ollama.*
-
----
-
-## 💡 Example End-to-End API Workflow
-
-### 1. Register User & Login
+Run the full automated test suite:
 ```bash
-# Register
-curl -X POST "http://localhost:8000/api/v1/auth/register" \
-     -H "Content-Type: application/json" \
-     -d '{"email": "alice@acme.com", "password": "Password123!", "full_name": "Alice Admin"}'
+# Unit & integration tests (Auth, Ingestion, Isolation, RAG)
+pytest
 
-# Login
-curl -X POST "http://localhost:8000/api/v1/auth/login" \
-     -H "Content-Type: application/json" \
-     -d '{"email": "alice@acme.com", "password": "Password123!"}'
-# Output: {"access_token": "ey...", "refresh_token": "ey..."}
-```
-
-### 2. Create Organization & Project
-```bash
-# Create Organization
-curl -X POST "http://localhost:8000/api/v1/organizations" \
-     -H "Authorization: Bearer <ACCESS_TOKEN>" \
-     -H "Content-Type: application/json" \
-     -d '{"name": "Acme Corporation"}'
-# Output: {"id": "ORG_UUID", "slug": "acme-corporation", ...}
-
-# Create Project
-curl -X POST "http://localhost:8000/api/v1/organizations/<ORG_UUID>/projects" \
-     -H "Authorization: Bearer <ACCESS_TOKEN>" \
-     -H "Content-Type: application/json" \
-     -d '{"name": "HR Policies"}'
-# Output: {"id": "PROJECT_UUID", "name": "HR Policies", ...}
-```
-
-### 3. Upload Document
-```bash
-curl -X POST "http://localhost:8000/api/v1/documents/upload" \
-     -H "Authorization: Bearer <ACCESS_TOKEN>" \
-     -F "organization_id=<ORG_UUID>" \
-     -F "project_id=<PROJECT_UUID>" \
-     -F "file=@employee_handbook.pdf"
-```
-
-### 4. Check Ingestion Status
-```bash
-curl -X GET "http://localhost:8000/api/v1/documents/<DOC_UUID>/status?organization_id=<ORG_UUID>" \
-     -H "Authorization: Bearer <ACCESS_TOKEN>"
-```
-
-### 5. Perform Hybrid Search
-```bash
-curl -X GET "http://localhost:8000/api/v1/search?organization_id=<ORG_UUID>&project_id=<PROJECT_UUID>&query=annual+leave+policy" \
-     -H "Authorization: Bearer <ACCESS_TOKEN>"
-```
-
-### 6. RAG Chat Question & Answer
-```bash
-curl -X POST "http://localhost:8000/api/v1/chat" \
-     -H "Authorization: Bearer <ACCESS_TOKEN>" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "organization_id": "<ORG_UUID>",
-       "project_id": "<PROJECT_UUID>",
-       "question": "How many days of paid leave do employees get?"
-     }'
+# Live end-to-end stress test across all 10 pipeline stages
+python tests/verify_live_e2e_random.py
 ```
 
 ---
 
-## 🧪 Testing Instructions
-
-Run the unit and integration test suite (including cross-tenant security verification):
-```bash
-pytest -v
-```
-
----
-
-## 🔒 Security & Multi-Tenancy Design
-
-* **Zero Cross-Tenant Leakage**: Every repository query forces an explicit `organization_id` filter prior to performing vector similarity or full-text scoring.
-* **Role Hierarchy & RBAC**: Operations are restricted based on user role (`OWNER` > `ADMIN` > `EDITOR` > `VIEWER`).
-* **Secure API Keys**: Keys use a readable prefix (`edip_live_...`) with secret values hashed using SHA-256 (`hash_api_key`), ensuring plain keys are shown only once upon creation.
-* **Prompt Injection Defense**: RAG system prompts explicitly mandate that retrieved chunks are untrusted evidence, forbidding execution of embedded prompt override instructions.
+## 📄 License
+This project is open-source under the [MIT License](LICENSE).

@@ -39,7 +39,7 @@ export interface Project {
   id: string;
   organization_id: string;
   name: string;
-  slug: string;
+  slug?: string | null;
   description?: string | null;
   created_at: string;
   updated_at: string;

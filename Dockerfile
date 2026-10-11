@@ -13,9 +13,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# Copy dependency list and install requirements
+# Copy dependency list and install requirements (pre-install CPU-only torch to prevent CUDA bloat on ARM64/x86)
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir -r requirements.txt
+
 
 # Copy application source code
 COPY . .

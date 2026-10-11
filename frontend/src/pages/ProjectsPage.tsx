@@ -59,16 +59,16 @@ export default function ProjectsPage() {
 
   return (
     <MainLayout pageTitle="Projects">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">Project Collections</h2>
-          <p className="text-sm text-slate-500">
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Project Collections</h2>
+          <p className="text-sm text-slate-500 mt-0.5">
             Organize documents into isolated knowledge bases for search and RAG assistant queries.
           </p>
         </div>
         <button
           onClick={() => setIsCreateOpen(true)}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-sky-600 text-white rounded-lg text-sm font-medium hover:bg-sky-700 transition-colors shadow-sm"
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 transition-colors shadow-xs cursor-pointer"
         >
           <Plus size={16} /> New Project
         </button>
@@ -77,15 +77,17 @@ export default function ProjectsPage() {
       {isLoading ? (
         <div className="py-12 text-center text-sm text-slate-400">Loading projects...</div>
       ) : projects.length === 0 ? (
-        <div className="bg-white rounded-xl border border-slate-200 p-12 text-center max-w-lg mx-auto">
-          <FolderOpen className="mx-auto h-12 w-12 text-slate-300 mb-3" />
+        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-card p-12 text-center max-w-lg mx-auto">
+          <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-3 shadow-2xs">
+            <FolderOpen size={22} />
+          </div>
           <h3 className="text-base font-semibold text-slate-800">No projects yet</h3>
           <p className="text-sm text-slate-500 mt-1 mb-6">
             Create your first project to organize documents and scope semantic queries.
           </p>
           <button
             onClick={() => setIsCreateOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-sky-600 text-white rounded-lg text-sm font-medium hover:bg-sky-700"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 shadow-xs"
           >
             <Plus size={16} /> Create Project
           </button>
@@ -97,18 +99,18 @@ export default function ProjectsPage() {
             return (
               <div
                 key={proj.id}
-                className={`bg-white rounded-xl border p-5 flex flex-col justify-between transition-all duration-150 ${
+                className={`bg-white rounded-2xl border p-5 flex flex-col justify-between transition-all duration-150 shadow-card ${
                   isActive
-                    ? 'border-sky-500 shadow-md ring-1 ring-sky-500/20'
-                    : 'border-slate-200 hover:border-slate-300 shadow-sm'
+                    ? 'border-red-500 ring-2 ring-red-500/10'
+                    : 'border-slate-200/90 hover:border-slate-300'
                 }`}
               >
                 <div>
                   <div className="flex items-start justify-between gap-2 mb-3">
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-3">
                       <div
-                        className={`w-9 h-9 rounded-lg flex items-center justify-center ${
-                          isActive ? 'bg-sky-100 text-sky-700' : 'bg-slate-100 text-slate-600'
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                          isActive ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-600'
                         }`}
                       >
                         <FolderOpen size={18} />
@@ -117,11 +119,13 @@ export default function ProjectsPage() {
                         <h4 className="text-sm font-semibold text-slate-900 leading-snug">
                           {proj.name}
                         </h4>
-                        <span className="text-xs text-slate-400">slug: {proj.slug}</span>
+                        <span className="text-xs text-slate-400">
+                          {proj.slug ? `slug: ${proj.slug}` : `ID: ${proj.id.substring(0, 8)}`}
+                        </span>
                       </div>
                     </div>
                     {isActive && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-sky-100 text-sky-800">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200/60">
                         <Check size={12} /> Active
                       </span>
                     )}
@@ -132,31 +136,29 @@ export default function ProjectsPage() {
                   </p>
                 </div>
 
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                <div className="pt-3.5 border-t border-slate-100 flex items-center justify-between">
                   <span className="text-xs text-slate-400">
                     Created {formatDate(proj.created_at)}
                   </span>
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() =>
-                        deleteMutation.mutate(proj.id)
-                      }
+                      onClick={() => deleteMutation.mutate(proj.id)}
                       title="Delete Project"
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                     >
                       <Trash2 size={14} />
                     </button>
                     {!isActive ? (
                       <button
                         onClick={() => setActiveProject(proj)}
-                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition-colors"
+                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors"
                       >
                         Select
                       </button>
                     ) : (
                       <button
                         onClick={() => setActiveProject(null)}
-                        className="px-3 py-1.5 bg-sky-50 text-sky-700 rounded-lg text-xs font-medium"
+                        className="px-3 py-1.5 bg-red-50 text-red-700 rounded-lg text-xs font-semibold"
                       >
                         Deselect
                       </button>
@@ -180,14 +182,14 @@ export default function ProjectsPage() {
       >
         <form onSubmit={handleCreate} className="space-y-4">
           {errorMessage && (
-            <div className="p-3 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2 text-sm text-red-700">
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 flex items-center gap-2 text-sm text-rose-700">
               <AlertCircle size={16} className="shrink-0" />
               <span>{errorMessage}</span>
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
               Project Name *
             </label>
             <input
@@ -196,12 +198,12 @@ export default function ProjectsPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Legal Contracts 2026"
-              className="block w-full px-3 py-2 border border-slate-300 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+              className="block w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm placeholder-slate-400 text-slate-900 focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
               Description (optional)
             </label>
             <textarea
@@ -209,22 +211,22 @@ export default function ProjectsPage() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Brief description of the documents stored here..."
-              className="block w-full px-3 py-2 border border-slate-300 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+              className="block w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm placeholder-slate-400 text-slate-900 focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all"
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
             <button
               type="button"
               onClick={() => setIsCreateOpen(false)}
-              className="px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 hover:bg-slate-50"
+              className="px-4 py-2 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={createMutation.isPending || !name.trim()}
-              className="px-4 py-2 bg-sky-600 text-white rounded-lg text-sm font-medium hover:bg-sky-700 disabled:opacity-50"
+              className="px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 disabled:opacity-50 transition-colors shadow-xs"
             >
               {createMutation.isPending ? 'Creating...' : 'Create Project'}
             </button>

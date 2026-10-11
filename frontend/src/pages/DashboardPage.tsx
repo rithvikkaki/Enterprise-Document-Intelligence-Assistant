@@ -40,14 +40,14 @@ export default function DashboardPage() {
   if (!activeOrg) {
     return (
       <MainLayout pageTitle="Dashboard">
-        <div className="bg-white rounded-xl border border-slate-200 p-8 text-center max-w-md mx-auto mt-12">
+        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-card p-8 text-center max-w-md mx-auto mt-12">
           <h3 className="text-base font-semibold text-slate-900 mb-2">No Organization Selected</h3>
-          <p className="text-sm text-slate-500 mb-4">
-            Please select an organization context to view documents and analytics.
+          <p className="text-sm text-slate-500 mb-6">
+            Please select an organization workspace to view documents and analytics.
           </p>
           <Link
             to="/org-select"
-            className="inline-flex items-center px-4 py-2 bg-sky-600 text-white rounded-lg text-sm font-medium hover:bg-sky-700"
+            className="inline-flex items-center px-4 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 transition-colors shadow-xs"
           >
             Select Organization
           </Link>
@@ -61,8 +61,8 @@ export default function DashboardPage() {
       title: 'Total Documents',
       value: stats?.total_documents ?? 0,
       icon: FileText,
-      color: 'text-sky-600',
-      bg: 'bg-sky-50',
+      color: 'text-red-600',
+      bg: 'bg-red-50',
     },
     {
       title: 'Completed',
@@ -82,46 +82,46 @@ export default function DashboardPage() {
       title: 'Failed',
       value: stats?.failed_documents ?? 0,
       icon: XCircle,
-      color: 'text-red-600',
-      bg: 'bg-red-50',
+      color: 'text-rose-600',
+      bg: 'bg-rose-50',
     },
     {
       title: 'Projects',
       value: stats?.total_projects ?? 0,
       icon: FolderOpen,
-      color: 'text-indigo-600',
-      bg: 'bg-indigo-50',
+      color: 'text-slate-700',
+      bg: 'bg-slate-100',
     },
     {
       title: 'Team Members',
       value: stats?.total_members ?? 0,
       icon: Users,
-      color: 'text-purple-600',
-      bg: 'bg-purple-50',
+      color: 'text-stone-700',
+      bg: 'bg-stone-100',
     },
   ];
 
   return (
     <MainLayout pageTitle={`Dashboard — ${activeOrg.name}`}>
-      {/* Top Banner / Welcome */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      {/* Top Welcome Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">Knowledge Overview</h2>
-          <p className="text-sm text-slate-500">
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Workspace Overview</h2>
+          <p className="text-sm text-slate-500 mt-0.5">
             Real-time status of document ingestion, semantic embeddings, and project collections.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <Link
             to="/search"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors shadow-sm"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
           >
-            <Search size={15} />
+            <Search size={15} className="text-slate-500" />
             Hybrid Search
           </Link>
           <Link
             to="/documents"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-sky-600 text-white rounded-lg text-sm font-medium hover:bg-sky-700 transition-colors shadow-sm"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 transition-colors shadow-xs"
           >
             <Upload size={15} />
             Upload Document
@@ -136,15 +136,15 @@ export default function DashboardPage() {
           return (
             <div
               key={c.title}
-              className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm"
+              className="bg-white rounded-2xl border border-slate-200/90 p-4.5 shadow-card hover:border-slate-300 transition-all duration-150"
             >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-slate-500">{c.title}</span>
-                <div className={`p-1.5 rounded-lg ${c.bg} ${c.color}`}>
-                  <Icon size={16} />
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold text-slate-500">{c.title}</span>
+                <div className={`p-2 rounded-xl ${c.bg} ${c.color}`}>
+                  <Icon size={16} strokeWidth={2} />
                 </div>
               </div>
-              <p className="text-2xl font-bold text-slate-900">
+              <p className="text-2xl font-bold text-slate-900 tracking-tight">
                 {statsLoading ? '—' : c.value}
               </p>
             </div>
@@ -152,35 +152,37 @@ export default function DashboardPage() {
         })}
       </div>
 
-      {/* Recent Documents & Pipeline Activity */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+      {/* Recent Documents Table Card */}
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-card overflow-hidden">
+        <div className="px-6 py-4.5 border-b border-slate-100 flex items-center justify-between">
           <div>
             <h3 className="text-base font-semibold text-slate-900">Recent Documents</h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-400 mt-0.5">
               Latest documents uploaded and processed across active projects
             </p>
           </div>
           <Link
             to="/documents"
-            className="text-xs font-medium text-sky-600 hover:text-sky-700 flex items-center gap-1"
+            className="text-xs font-semibold text-red-600 hover:text-red-700 flex items-center gap-1 transition-colors"
           >
             View all <ArrowRight size={13} />
           </Link>
         </div>
 
         {docsLoading ? (
-          <div className="p-8 text-center text-sm text-slate-400">Loading documents...</div>
+          <div className="p-12 text-center text-sm text-slate-400">Loading documents...</div>
         ) : recentDocs.length === 0 ? (
           <div className="p-12 text-center">
-            <FileText className="mx-auto h-10 w-10 text-slate-300 mb-2" />
-            <p className="text-sm font-medium text-slate-700">No documents yet</p>
-            <p className="text-xs text-slate-400 mt-1 mb-4">
-              Upload PDF, DOCX, XLSX, HTML, or images to begin indexing.
+            <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
+              <FileText size={22} />
+            </div>
+            <p className="text-sm font-semibold text-slate-700">No documents yet</p>
+            <p className="text-xs text-slate-400 mt-1 mb-5">
+              Upload PDF, DOCX, XLSX, HTML, or images to begin semantic indexing.
             </p>
             <Link
               to="/documents"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-600 text-white rounded-lg text-xs font-medium hover:bg-sky-700"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-red-600 text-white rounded-xl text-xs font-semibold hover:bg-red-700 shadow-xs"
             >
               <Upload size={14} /> Upload First File
             </Link>
@@ -189,7 +191,7 @@ export default function DashboardPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-sm">
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/75 text-xs text-slate-500 uppercase tracking-wider font-semibold">
+                <tr className="border-b border-slate-100 bg-slate-50/75 text-[11px] text-slate-500 uppercase tracking-wider font-semibold">
                   <th className="py-3 px-6">Document Title</th>
                   <th className="py-3 px-6">MIME Type</th>
                   <th className="py-3 px-6">Status</th>
@@ -199,8 +201,8 @@ export default function DashboardPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {recentDocs.slice(0, 8).map((doc) => (
-                  <tr key={doc.id} className="hover:bg-slate-50/60 transition-colors">
-                    <td className="py-3.5 px-6 font-medium text-slate-800 flex items-center gap-2">
+                  <tr key={doc.id} className="hover:bg-slate-50/70 transition-colors">
+                    <td className="py-3.5 px-6 font-medium text-slate-800 flex items-center gap-2.5">
                       <FileText size={16} className="text-slate-400 shrink-0" />
                       <span className="truncate max-w-xs">{doc.title}</span>
                     </td>
@@ -216,7 +218,7 @@ export default function DashboardPage() {
                     <td className="py-3.5 px-6 text-right">
                       <Link
                         to={`/documents/${doc.id}`}
-                        className="text-xs font-medium text-sky-600 hover:text-sky-700"
+                        className="text-xs font-semibold text-red-600 hover:text-red-700"
                       >
                         Details
                       </Link>

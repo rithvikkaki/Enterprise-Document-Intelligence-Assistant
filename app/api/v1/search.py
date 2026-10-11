@@ -35,4 +35,16 @@ async def search_documents(
     )
 
     search_service = SearchService(db)
-    return await search_service.perform_hybrid_search(request)
+    res = await search_service.perform_hybrid_search(request)
+
+    from app.services.audit_service import AuditService
+    audit = AuditService(db)
+    await audit.log_event(
+        action="SEARCH_QUERY",
+        resource_type="Search",
+        organization_id=organization_id,
+        user_id=current_user.id,
+        metadata={"query": query, "total_results": res.total_results}
+    )
+
+    return res

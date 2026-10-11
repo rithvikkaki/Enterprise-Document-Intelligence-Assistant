@@ -1,0 +1,112 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: edip_postgres_prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Error: POSTGRES_PASSWORD must be explicitly set in production}"
+      POSTGRES_DB: ${POSTGRES_DB:-document_intelligence}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-document_intelligence}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Ports omitted: PostgreSQL is isolated strictly to the internal Docker network
+
+  redis:
+    image: redis:7-alpine
+    container_name: edip_redis_prod
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Ports omitted: Redis is isolated strictly to the internal Docker network
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: edip_ollama_prod
+    restart: unless-stopped
+    volumes:
+      - ollama_data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    # Ports omitted: Ollama is internal to Docker network, zero public or host exposure
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: edip_api_prod
+    restart: unless-stopped
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+    volumes:
+      - local_storage:/app/storage
+    # Bound strictly to loopback interface (127.0.0.1) for Caddy or Cloudflare Tunnel
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      ENVIRONMENT: production
+      DEBUG: "false"
+      DATABASE_URL: "postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?Error: POSTGRES_PASSWORD must be set}@postgres:5432/${POSTGRES_DB:-document_intelligence}"
+      SYNC_DATABASE_URL: "postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?Error: POSTGRES_PASSWORD must be set}@postgres:5432/${POSTGRES_DB:-document_intelligence}"
+      REDIS_URL: redis://redis:6379/0
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2:1b}
+      SECRET_KEY: "${SECRET_KEY:?Error: SECRET_KEY must be set in production}"
+      JWT_SECRET_KEY: "${JWT_SECRET_KEY:?Error: JWT_SECRET_KEY must be set in production}"
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      STORAGE_PROVIDER: local
+      LOCAL_STORAGE_PATH: /app/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: edip_celery_worker_prod
+    restart: unless-stopped
+    command: ["celery", "-A", "app.workers.celery_app", "worker", "--loglevel=info", "--concurrency=2"]
+    volumes:
+      - local_storage:/app/storage
+    environment:
+      ENVIRONMENT: production
+      DEBUG: "false"
+      DATABASE_URL: "postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?Error: POSTGRES_PASSWORD must be set}@postgres:5432/${POSTGRES_DB:-document_intelligence}"
+      SYNC_DATABASE_URL: "postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?Error: POSTGRES_PASSWORD must be set}@postgres:5432/${POSTGRES_DB:-document_intelligence}"
+      REDIS_URL: redis://redis:6379/0
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2:1b}
+      SECRET_KEY: "${SECRET_KEY:?Error: SECRET_KEY must be set in production}"
+      JWT_SECRET_KEY: "${JWT_SECRET_KEY:?Error: JWT_SECRET_KEY must be set in production}"
+      STORAGE_PROVIDER: local
+      LOCAL_STORAGE_PATH: /app/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+    name: intellidocs_postgres_data_prod
+  local_storage:
+    name: intellidocs_local_storage_prod
+  ollama_data:
+    name: intellidocs_ollama_data_prod

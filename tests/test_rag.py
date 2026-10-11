@@ -24,3 +24,21 @@ async def test_rag_citation_provenance(db_session):
     resp = await rag_service.answer_question(req)
     assert resp.question == "What is the remote work policy?"
     assert isinstance(resp.sources, list)
+
+
+@pytest.mark.asyncio
+async def test_rag_greeting_response(db_session):
+    rag_service = RAGService(db_session)
+    org_id = uuid.uuid4()
+    proj_id = uuid.uuid4()
+
+    req = ChatQueryRequest(
+        organization_id=org_id,
+        project_id=proj_id,
+        question="hello",
+    )
+
+    resp = await rag_service.answer_question(req)
+    assert "Enterprise Document Intelligence Assistant" in resp.answer
+    assert resp.sources == []
+

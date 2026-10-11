@@ -7,7 +7,6 @@ import {
   Search,
   Filter,
   AlertCircle,
-  CheckCircle2,
   FileCode,
   FileSpreadsheet,
   FileArchive,
@@ -23,13 +22,13 @@ import { Document, Project } from '../types';
 import { formatDate } from '../lib/utils';
 
 function getFileIcon(mimeType: string) {
-  if (mimeType.includes('pdf')) return <FileText className="text-red-500 shrink-0" size={18} />;
+  if (mimeType.includes('pdf')) return <FileText className="text-red-600 shrink-0" size={18} />;
   if (mimeType.includes('spreadsheet') || mimeType.includes('excel') || mimeType.includes('csv'))
-    return <FileSpreadsheet className="text-emerald-500 shrink-0" size={18} />;
+    return <FileSpreadsheet className="text-emerald-600 shrink-0" size={18} />;
   if (mimeType.includes('zip') || mimeType.includes('archive'))
-    return <FileArchive className="text-amber-500 shrink-0" size={18} />;
-  if (mimeType.includes('image')) return <ImageIcon className="text-purple-500 shrink-0" size={18} />;
-  return <FileCode className="text-sky-500 shrink-0" size={18} />;
+    return <FileArchive className="text-amber-600 shrink-0" size={18} />;
+  if (mimeType.includes('image')) return <ImageIcon className="text-rose-500 shrink-0" size={18} />;
+  return <FileCode className="text-slate-600 shrink-0" size={18} />;
 }
 
 export default function DocumentsPage() {
@@ -53,6 +52,17 @@ export default function DocumentsPage() {
     queryFn: () => projectsApi.list(activeOrg!.id),
     enabled: !!activeOrg,
   });
+
+  React.useEffect(() => {
+    if (projects.length > 0) {
+      if (!uploadProject || !projects.some((p) => p.id === uploadProject)) {
+        setUploadProject(activeProject?.id || projects[0].id);
+      }
+      if (!selectedProjectId && activeProject?.id) {
+        setSelectedProjectId(activeProject.id);
+      }
+    }
+  }, [projects, uploadProject, selectedProjectId, activeProject]);
 
   const { data: documents = [], isLoading } = useQuery<Document[]>({
     queryKey: ['documents', activeOrg?.id, selectedProjectId || undefined],
@@ -115,10 +125,10 @@ export default function DocumentsPage() {
 
   return (
     <MainLayout pageTitle="Documents">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">Document Repository</h2>
-          <p className="text-sm text-slate-500">
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Document Repository</h2>
+          <p className="text-sm text-slate-500 mt-0.5">
             Upload, inspect extracted chunks, and monitor asynchronous embedding pipeline.
           </p>
         </div>
@@ -127,22 +137,22 @@ export default function DocumentsPage() {
             setUploadProject(selectedProjectId || (projects[0]?.id ?? ''));
             setIsUploadOpen(true);
           }}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-sky-600 text-white rounded-lg text-sm font-medium hover:bg-sky-700 transition-colors shadow-sm cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 transition-colors shadow-xs cursor-pointer"
         >
           <Upload size={16} /> Upload Document
         </button>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6 flex flex-col md:flex-row gap-3 items-center justify-between">
+      <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-card mb-6 flex flex-col md:flex-row gap-3 items-center justify-between">
         <div className="relative w-full md:w-80">
-          <Search size={16} className="absolute left-3 top-2.5 text-slate-400" />
+          <Search size={16} className="absolute left-3.5 top-2.5 text-slate-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Filter by title..."
-            className="w-full pl-9 pr-3 py-1.5 border border-slate-200 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500"
+            className="w-full pl-9 pr-3 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-sm placeholder-slate-400 text-slate-900 focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all"
           />
         </div>
 
@@ -151,7 +161,7 @@ export default function DocumentsPage() {
           <select
             value={selectedProjectId}
             onChange={(e) => setSelectedProjectId(e.target.value)}
-            className="w-full md:w-56 py-1.5 px-2.5 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white"
+            className="w-full md:w-56 py-2 px-3 border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 bg-white"
           >
             <option value="">All Projects</option>
             {projects.map((p) => (
@@ -164,16 +174,18 @@ export default function DocumentsPage() {
       </div>
 
       {/* Documents Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-card overflow-hidden">
         {isLoading ? (
           <div className="p-12 text-center text-sm text-slate-400">Loading documents...</div>
         ) : filteredDocs.length === 0 ? (
           <div className="p-12 text-center">
-            <FileText className="mx-auto h-12 w-12 text-slate-300 mb-3" />
+            <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
+              <FileText size={22} />
+            </div>
             <h3 className="text-base font-semibold text-slate-800">No documents found</h3>
             <p className="text-sm text-slate-500 mt-1 mb-6">
               {searchQuery
-                ? 'No documents match your filter.'
+                ? 'No documents match your search query.'
                 : 'Upload files (PDF, DOCX, XLSX, HTML, EML, Images, ZIP) to start processing.'}
             </p>
             <button
@@ -181,7 +193,7 @@ export default function DocumentsPage() {
                 setUploadProject(selectedProjectId || (projects[0]?.id ?? ''));
                 setIsUploadOpen(true);
               }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-sky-600 text-white rounded-lg text-sm font-medium hover:bg-sky-700"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 shadow-xs"
             >
               <Upload size={16} /> Upload Document
             </button>
@@ -190,7 +202,7 @@ export default function DocumentsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-sm">
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/75 text-xs text-slate-500 uppercase tracking-wider font-semibold">
+                <tr className="border-b border-slate-100 bg-slate-50/75 text-[11px] text-slate-500 uppercase tracking-wider font-semibold">
                   <th className="py-3 px-6">File Name</th>
                   <th className="py-3 px-6">MIME Type</th>
                   <th className="py-3 px-6">Status</th>
@@ -200,7 +212,7 @@ export default function DocumentsPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredDocs.map((doc) => (
-                  <tr key={doc.id} className="hover:bg-slate-50/60 transition-colors">
+                  <tr key={doc.id} className="hover:bg-slate-50/70 transition-colors">
                     <td className="py-3.5 px-6 font-medium text-slate-800 flex items-center gap-3">
                       {getFileIcon(doc.mime_type)}
                       <span className="truncate max-w-sm">{doc.title}</span>
@@ -217,7 +229,7 @@ export default function DocumentsPage() {
                     <td className="py-3.5 px-6 text-right">
                       <Link
                         to={`/documents/${doc.id}`}
-                        className="text-xs font-semibold text-sky-600 hover:text-sky-700"
+                        className="text-xs font-semibold text-red-600 hover:text-red-700"
                       >
                         Inspect
                       </Link>
@@ -243,43 +255,54 @@ export default function DocumentsPage() {
       >
         <div className="space-y-4">
           {uploadError && (
-            <div className="p-3 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2 text-sm text-red-700">
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 flex items-center gap-2 text-sm text-rose-700">
               <AlertCircle size={16} className="shrink-0" />
               <span>{uploadError}</span>
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
               Target Project *
             </label>
-            <select
-              value={uploadProject}
-              onChange={(e) => setUploadProject(e.target.value)}
-              className="w-full py-2 px-3 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-sky-500 focus:outline-none"
-            >
-              <option value="" disabled>
-                Select a project...
-              </option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
+            {projects.length === 0 ? (
+              <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-center justify-between">
+                <span>No projects found. Please create a project first.</span>
+                <Link to="/projects" className="font-semibold text-red-600 underline ml-2">
+                  Go to Projects
+                </Link>
+              </div>
+            ) : (
+              <select
+                value={uploadProject}
+                onChange={(e) => setUploadProject(e.target.value)}
+                className="w-full py-2.5 px-3 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 text-slate-800"
+              >
+                <option value="" disabled>
+                  Select a project...
                 </option>
-              ))}
-            </select>
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">File</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
+              File
+            </label>
             <div
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
+              className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all ${
                 isDragging
-                  ? 'border-sky-500 bg-sky-50/50'
-                  : 'border-slate-300 hover:border-slate-400 bg-slate-50/50'
+                  ? 'border-red-500 bg-red-50/50'
+                  : 'border-slate-200 hover:border-red-400 bg-slate-50/60'
               }`}
             >
               <input
@@ -292,17 +315,19 @@ export default function DocumentsPage() {
                   }
                 }}
               />
-              <Upload className="mx-auto h-10 w-10 text-slate-400 mb-2" />
+              <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 text-slate-500 flex items-center justify-center mx-auto mb-2.5 shadow-2xs">
+                <Upload size={18} />
+              </div>
               {uploadFile ? (
                 <div>
-                  <p className="text-sm font-semibold text-slate-800">{uploadFile.name}</p>
+                  <p className="text-sm font-semibold text-slate-900">{uploadFile.name}</p>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    {(uploadFile.size / 1024).toFixed(1)} KB • Click to change
+                    {(uploadFile.size / 1024).toFixed(1)} KB • Click to choose a different file
                   </p>
                 </div>
               ) : (
                 <div>
-                  <p className="text-sm font-medium text-slate-700">
+                  <p className="text-sm font-semibold text-slate-700">
                     Drag and drop file here, or click to browse
                   </p>
                   <p className="text-xs text-slate-400 mt-1">
@@ -314,25 +339,25 @@ export default function DocumentsPage() {
           </div>
 
           {uploadProgress !== null && (
-            <div className="space-y-1">
-              <div className="flex justify-between text-xs text-slate-500 font-medium">
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-xs text-slate-600 font-medium">
                 <span>Uploading to storage...</span>
                 <span>{uploadProgress}%</span>
               </div>
               <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                 <div
-                  className="bg-sky-600 h-2 rounded-full transition-all duration-200"
+                  className="bg-red-600 h-2 rounded-full transition-all duration-200"
                   style={{ width: `${uploadProgress}%` }}
                 />
               </div>
             </div>
           )}
 
-          <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
             <button
               type="button"
               onClick={() => setIsUploadOpen(false)}
-              className="px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 hover:bg-slate-50"
+              className="px-4 py-2 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
             >
               Cancel
             </button>
@@ -340,7 +365,7 @@ export default function DocumentsPage() {
               type="button"
               onClick={() => uploadMutation.mutate()}
               disabled={uploadMutation.isPending || !uploadFile || !uploadProject}
-              className="px-4 py-2 bg-sky-600 text-white rounded-lg text-sm font-medium hover:bg-sky-700 disabled:opacity-50 flex items-center gap-1.5"
+              className="px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 disabled:opacity-50 transition-colors shadow-xs flex items-center gap-1.5"
             >
               <Upload size={15} />
               {uploadMutation.isPending ? 'Queuing Job...' : 'Upload and Process'}

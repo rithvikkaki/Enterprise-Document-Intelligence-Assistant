@@ -53,7 +53,14 @@ class DocumentService:
         if not project:
             raise NotFoundError("Project", str(project_id))
 
-        self.validate_file(filename, len(content))
+        # Sanitize filename to prevent path traversal
+        import os
+        safe_filename = os.path.basename(filename.replace("\\", "/")).strip()
+        if not safe_filename:
+            safe_filename = "document.txt"
+
+        self.validate_file(safe_filename, len(content))
+        filename = safe_filename
 
         # Check Idempotency-Key
         if idempotency_key:

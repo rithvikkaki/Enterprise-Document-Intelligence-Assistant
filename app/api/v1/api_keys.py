@@ -22,7 +22,20 @@ async def create_api_key(
     await service_dep(request.organization_id, current_user, db)
 
     service = APIKeyService(db)
-    return await service.create_api_key(request, creator_user_id=current_user.id)
+    created_key = await service.create_api_key(request, creator_user_id=current_user.id)
+
+    from app.services.audit_service import AuditService
+    audit = AuditService(db)
+    await audit.log_event(
+        action="API_KEY_CREATED",
+        resource_type="APIKey",
+        organization_id=request.organization_id,
+        user_id=current_user.id,
+        resource_id=str(created_key.id),
+        metadata={"name": request.name, "scopes": request.scopes}
+    )
+
+    return created_key
 
 
 @router.get("", response_model=List[APIKeyResponse])
@@ -50,4 +63,15 @@ async def revoke_api_key(
 
     service = APIKeyService(db)
     await service.revoke_api_key(id, organization_id)
+
+    from app.services.audit_service import AuditService
+    audit = AuditService(db)
+    await audit.log_event(
+        action="API_KEY_REVOKED",
+        resource_type="APIKey",
+        organization_id=organization_id,
+        user_id=current_user.id,
+        resource_id=str(id),
+    )
+
     return None

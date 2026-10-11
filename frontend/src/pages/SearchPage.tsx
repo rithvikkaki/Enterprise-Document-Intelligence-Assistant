@@ -31,6 +31,22 @@ export default function SearchPage() {
     enabled: !!activeOrg,
   });
 
+  React.useEffect(() => {
+    if (projects.length > 0) {
+      if (!selectedProjectId || !projects.some((p) => p.id === selectedProjectId)) {
+        const projToSelect =
+          activeProject?.id && projects.some((p) => p.id === activeProject.id)
+            ? activeProject.id
+            : projects[0].id;
+        setSelectedProjectId(projToSelect);
+        const p = projects.find((x) => x.id === projToSelect);
+        if (p && (!activeProject || activeProject.id !== p.id)) {
+          setActiveProject(p);
+        }
+      }
+    }
+  }, [projects, selectedProjectId, activeProject, setActiveProject]);
+
   const searchMutation = useMutation({
     mutationFn: async () => {
       if (!query.trim() || !selectedProjectId) {
@@ -52,15 +68,15 @@ export default function SearchPage() {
     <MainLayout pageTitle="Hybrid Semantic Search">
       <div className="max-w-4xl mx-auto space-y-6">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">Hybrid Search Engine</h2>
-          <p className="text-sm text-slate-500">
-            Combines dense vector similarity (all-MiniLM-L6-v2) and full-text search (PostgreSQL FTS) using Reciprocal Rank Fusion ($k=60$).
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Hybrid Search Engine</h2>
+          <p className="text-sm text-slate-500 mt-0.5">
+            Combines dense vector similarity (all-MiniLM-L6-v2) and full-text search (PostgreSQL FTS) using Reciprocal Rank Fusion (k=60).
           </p>
         </div>
 
         {/* Search Bar and Project Filter Form */}
-        <form onSubmit={handleSearch} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-          <div className="flex gap-2">
+        <form onSubmit={handleSearch} className="bg-white p-4.5 rounded-2xl border border-slate-200/90 shadow-card space-y-3.5">
+          <div className="flex gap-2.5">
             <div className="relative flex-1">
               <SearchIcon size={18} className="absolute left-3.5 top-3 text-slate-400" />
               <input
@@ -69,13 +85,13 @@ export default function SearchPage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Ask or search e.g. 'What is the quarterly revenue retention rate?'"
-                className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-colors"
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm placeholder-slate-400 text-slate-900 focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all"
               />
             </div>
             <button
               type="submit"
               disabled={searchMutation.isPending || !query.trim() || !selectedProjectId}
-              className="px-5 py-2.5 bg-sky-600 text-white rounded-xl text-sm font-medium hover:bg-sky-700 disabled:opacity-50 transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer"
+              className="px-5 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 disabled:opacity-50 transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
             >
               {searchMutation.isPending ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -86,10 +102,10 @@ export default function SearchPage() {
             </button>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100 text-xs text-slate-600">
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100 text-xs text-slate-600">
             <div className="flex items-center gap-2">
               <Filter size={14} className="text-slate-400" />
-              <span className="font-medium text-slate-500">Project Context:</span>
+              <span className="font-semibold text-slate-500">Project Context:</span>
               <select
                 value={selectedProjectId}
                 onChange={(e) => {
@@ -97,7 +113,7 @@ export default function SearchPage() {
                   const p = projects.find((x) => x.id === e.target.value);
                   if (p) setActiveProject(p);
                 }}
-                className="py-1 px-2 border border-slate-200 rounded-lg bg-white text-xs text-slate-700 focus:ring-2 focus:ring-sky-500 focus:outline-none font-medium"
+                className="py-1.5 px-2.5 border border-slate-200 rounded-lg bg-white text-xs text-slate-700 focus:ring-2 focus:ring-red-500 focus:outline-none font-medium"
               >
                 <option value="" disabled>
                   Select a project...
@@ -112,11 +128,11 @@ export default function SearchPage() {
 
             <div className="flex items-center gap-2">
               <SlidersHorizontal size={14} className="text-slate-400" />
-              <span>Top K:</span>
+              <span className="font-medium text-slate-500">Top K:</span>
               <select
                 value={limit}
                 onChange={(e) => setLimit(Number(e.target.value))}
-                className="py-1 px-2 border border-slate-200 rounded-lg bg-white text-xs text-slate-700 focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                className="py-1.5 px-2.5 border border-slate-200 rounded-lg bg-white text-xs text-slate-700 focus:ring-2 focus:ring-red-500 focus:outline-none"
               >
                 <option value={5}>5 Results</option>
                 <option value={10}>10 Results</option>
@@ -129,28 +145,32 @@ export default function SearchPage() {
         {/* Search Results Area */}
         {searchMutation.isPending ? (
           <div className="py-16 text-center space-y-3">
-            <div className="w-8 h-8 border-2 border-sky-600 border-t-transparent rounded-full animate-spin mx-auto" />
+            <div className="w-8 h-8 border-2 border-red-600 border-t-transparent rounded-full animate-spin mx-auto" />
             <p className="text-sm font-medium text-slate-600">
               Executing dense vector retrieval + full-text search fusion...
             </p>
           </div>
         ) : searchMutation.isError ? (
-          <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700 text-center">
+          <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-sm text-rose-700 text-center">
             {(searchMutation.error as any)?.response?.data?.error?.message ||
               (searchMutation.error as Error).message ||
               'Search query failed.'}
           </div>
         ) : !searchMutation.isSuccess ? (
-          <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-            <SearchIcon className="mx-auto h-12 w-12 text-slate-300 mb-3" />
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-card p-12 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-3 shadow-2xs">
+              <SearchIcon size={22} />
+            </div>
             <h3 className="text-base font-semibold text-slate-800">Ready to search</h3>
             <p className="text-sm text-slate-500 max-w-sm mx-auto mt-1">
               Select a project and enter a natural language question or keyword query to retrieve relevant chunks.
             </p>
           </div>
         ) : results.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-            <FileText className="mx-auto h-12 w-12 text-slate-300 mb-3" />
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-card p-12 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
+              <FileText size={22} />
+            </div>
             <h3 className="text-base font-semibold text-slate-800">No matching chunks found</h3>
             <p className="text-sm text-slate-500 max-w-sm mx-auto mt-1">
               Try adjusting your query or uploading more documents to this project collection.
@@ -160,10 +180,10 @@ export default function SearchPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between text-xs text-slate-500 px-1">
               <span>
-                Found <strong className="text-slate-800">{results.length}</strong> matching chunks for{' '}
-                <em className="text-slate-700">"{searchMutation.data?.query}"</em>
+                Found <strong className="text-slate-900">{results.length}</strong> matching chunks for{' '}
+                <em className="text-slate-700 font-medium">"{searchMutation.data?.query}"</em>
               </span>
-              <span className="bg-sky-50 text-sky-700 px-2 py-0.5 rounded font-medium">
+              <span className="bg-red-50 text-red-700 px-2.5 py-1 rounded-full font-semibold border border-red-100">
                 Reciprocal Rank Fusion (RRF k=60)
               </span>
             </div>
@@ -173,28 +193,28 @@ export default function SearchPage() {
               return (
                 <div
                   key={r.chunk_id}
-                  className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:border-slate-300 transition-colors"
+                  className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-card hover:border-slate-300 transition-colors"
                 >
-                  <div className="flex items-start justify-between gap-4 mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 text-xs font-bold flex items-center justify-center">
+                  <div className="flex items-start justify-between gap-4 mb-3">
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-6 h-6 rounded-lg bg-red-50 text-red-700 text-xs font-bold flex items-center justify-center">
                         {idx + 1}
                       </span>
                       <h4 className="text-sm font-semibold text-slate-900">
                         {r.document_name}
                       </h4>
-                      <span className="text-xs font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-600">
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
                         v{r.version_number} • chunk #{r.chunk_index}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100">
+                      <span className="text-xs font-mono font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60">
                         Score: {r.score.toFixed(4)}
                       </span>
                       <Link
                         to={`/documents/${r.document_id}`}
-                        className="text-xs font-medium text-sky-600 hover:text-sky-700 flex items-center gap-0.5"
+                        className="text-xs font-semibold text-red-600 hover:text-red-700 flex items-center gap-0.5"
                       >
                         Doc <ArrowRight size={12} />
                       </Link>
@@ -202,23 +222,23 @@ export default function SearchPage() {
                   </div>
 
                   {/* Chunk text content */}
-                  <p className="text-sm text-slate-700 leading-relaxed font-sans bg-slate-50/70 p-3 rounded-lg border border-slate-100">
+                  <p className="text-sm text-slate-700 leading-relaxed bg-slate-50/70 p-3.5 rounded-xl border border-slate-100">
                     {r.content}
                   </p>
 
-                  {/* Expandable Technical Details (RRF details) */}
+                  {/* Expandable Technical Details */}
                   {r.metadata && Object.keys(r.metadata).length > 0 && (
-                    <div className="mt-2 pt-2 border-t border-slate-100">
+                    <div className="mt-2.5 pt-2 border-t border-slate-100">
                       <button
                         onClick={() => setExpandedChunkId(isExpanded ? null : r.chunk_id)}
-                        className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1 cursor-pointer"
+                        className="text-xs font-medium text-slate-500 hover:text-slate-700 flex items-center gap-1 cursor-pointer"
                       >
                         {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                         <span>{isExpanded ? 'Hide metadata' : 'Inspect chunk metadata'}</span>
                       </button>
 
                       {isExpanded && (
-                        <pre className="mt-2 p-2 bg-slate-900 text-slate-200 text-xs font-mono rounded overflow-x-auto">
+                        <pre className="mt-2 p-3 bg-slate-50 border border-slate-200 text-slate-700 text-xs font-mono rounded-xl overflow-x-auto">
                           {JSON.stringify(r.metadata, null, 2)}
                         </pre>
                       )}

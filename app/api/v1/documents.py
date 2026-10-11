@@ -92,13 +92,49 @@ async def upload_document(
         idempotency_key=idempotency_key,
     )
 
-    # Trigger async Celery processing task (bypassed instantly during unit tests)
+    # Trigger async Celery processing task if broker is reachable, else execute directly in background
     if os.environ.get("TESTING") != "true":
+        celery_enqueued = False
         try:
+            import redis
+            r_client = redis.Redis.from_url(settings.REDIS_URL, socket_connect_timeout=0.5, socket_timeout=0.5)
+            r_client.ping()
             from app.workers.tasks import process_document_version
             process_document_version.delay(str(doc_version.id))
-        except Exception:
-            pass
+            celery_enqueued = True
+        except Exception as e:
+            from app.core.logging import logger
+            logger.info(f"Local Redis broker unavailable: {e}. Executing ingestion asynchronously in background.")
+
+        if not celery_enqueued:
+            import asyncio
+            from app.db.session import AsyncSessionLocal
+            from app.services.ingestion_service import IngestionService
+            version_uuid = doc_version.id
+
+            async def _background_ingest():
+                try:
+                    async with AsyncSessionLocal() as bg_session:
+                        ingestor = IngestionService(bg_session)
+                        await ingestor.process_version(version_uuid)
+                        await bg_session.commit()
+                except Exception as bg_err:
+                    from app.core.logging import logger
+                    logger.error(f"Background ingestion fallback error: {bg_err}")
+
+            asyncio.create_task(_background_ingest())
+
+    # Audit log document upload event
+    from app.services.audit_service import AuditService
+    audit = AuditService(db)
+    await audit.log_event(
+        action="DOCUMENT_UPLOAD",
+        resource_type="Document",
+        organization_id=organization_id,
+        user_id=current_user.id,
+        resource_id=str(doc_version.document_id),
+        metadata={"filename": file.filename or "document.txt", "size_bytes": len(content)}
+    )
 
     return {
         "message": "Document uploaded successfully and queued for processing",

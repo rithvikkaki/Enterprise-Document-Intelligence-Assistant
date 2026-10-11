@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Users, UserPlus, Trash2, Shield, Mail } from 'lucide-react';
+import { Users, UserPlus, Trash2, Mail } from 'lucide-react';
 import MainLayout from '../components/layout/MainLayout';
 import Modal from '../components/common/Modal';
 import { useAuth } from '../context/AuthContext';
@@ -11,9 +11,9 @@ import { formatDate } from '../lib/utils';
 function getRoleBadge(role: Role) {
   switch (role) {
     case 'OWNER':
-      return 'bg-purple-50 text-purple-700 border-purple-200';
+      return 'bg-violet-50 text-violet-700 border-violet-200';
     case 'ADMIN':
-      return 'bg-sky-50 text-sky-700 border-sky-200';
+      return 'bg-red-50 text-red-700 border-red-200';
     case 'EDITOR':
       return 'bg-amber-50 text-amber-700 border-amber-200';
     case 'VIEWER':
@@ -81,10 +81,10 @@ export default function MembersPage() {
 
   return (
     <MainLayout pageTitle="Team & Access Control">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">Organization Members</h2>
-          <p className="text-sm text-slate-500">
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Organization Members</h2>
+          <p className="text-sm text-slate-500 mt-0.5">
             Role-Based Access Control (RBAC): OWNER, ADMIN, EDITOR, and VIEWER permissions.
           </p>
         </div>
@@ -93,20 +93,20 @@ export default function MembersPage() {
             setErrorMessage(null);
             setIsAddOpen(true);
           }}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-sky-600 text-white rounded-lg text-sm font-medium hover:bg-sky-700 transition-colors shadow-sm cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 transition-colors shadow-xs cursor-pointer"
         >
           <UserPlus size={16} /> Add Member
         </button>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-card overflow-hidden">
         {isLoading ? (
           <div className="p-12 text-center text-sm text-slate-400">Loading members...</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-sm">
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/75 text-xs text-slate-500 uppercase tracking-wider font-semibold">
+                <tr className="border-b border-slate-100 bg-slate-50/75 text-[11px] text-slate-500 uppercase tracking-wider font-semibold">
                   <th className="py-3 px-6">Name</th>
                   <th className="py-3 px-6">Email</th>
                   <th className="py-3 px-6">Role</th>
@@ -119,11 +119,11 @@ export default function MembersPage() {
                   const isSelf = m.user_id === user?.id;
                   const isOwner = m.role === 'OWNER';
                   return (
-                    <tr key={m.id} className="hover:bg-slate-50/60 transition-colors">
+                    <tr key={m.id} className="hover:bg-slate-50/70 transition-colors">
                       <td className="py-3.5 px-6 font-medium text-slate-800">
                         {m.user_full_name || 'Member'}
                         {isSelf && (
-                          <span className="ml-2 text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-bold">
+                          <span className="ml-2 text-[10px] bg-red-50 text-red-700 border border-red-100 px-1.5 py-0.5 rounded-full font-bold">
                             YOU
                           </span>
                         )}
@@ -141,7 +141,7 @@ export default function MembersPage() {
                               newRole: e.target.value as Role,
                             })
                           }
-                          className={`text-xs font-semibold px-2 py-1 rounded-lg border focus:ring-2 focus:ring-sky-500 focus:outline-none ${getRoleBadge(
+                          className={`text-xs font-semibold px-2.5 py-1 rounded-full border focus:ring-2 focus:ring-red-500 focus:outline-none ${getRoleBadge(
                             m.role
                           )} ${isOwner ? 'cursor-not-allowed opacity-90' : 'cursor-pointer'}`}
                         >
@@ -164,7 +164,7 @@ export default function MembersPage() {
                                 removeMutation.mutate(m.id);
                               }
                             }}
-                            className="text-slate-400 hover:text-red-600 p-1 rounded transition-colors"
+                            className="text-slate-400 hover:text-rose-600 p-1 rounded-lg transition-colors"
                             title="Remove Member"
                           >
                             <Trash2 size={15} />
@@ -188,36 +188,36 @@ export default function MembersPage() {
       >
         <form onSubmit={handleAdd} className="space-y-4">
           {errorMessage && (
-            <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-sm text-rose-700">
               {errorMessage}
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
               Registered User Email *
             </label>
             <div className="relative">
-              <Mail size={16} className="absolute left-3 top-3 text-slate-400" />
+              <Mail size={16} className="absolute left-3.5 top-3 text-slate-400" />
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="colleague@enterprise.com"
-                className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                className="w-full pl-10 pr-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm placeholder-slate-400 text-slate-900 focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
               Initial Role *
             </label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value as Role)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-sky-500 focus:outline-none"
+              className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 text-slate-800"
             >
               <option value="VIEWER">VIEWER (Search & Ask Questions)</option>
               <option value="EDITOR">EDITOR (Upload Documents & Create Projects)</option>
@@ -225,18 +225,18 @@ export default function MembersPage() {
             </select>
           </div>
 
-          <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
             <button
               type="button"
               onClick={() => setIsAddOpen(false)}
-              className="px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 hover:bg-slate-50"
+              className="px-4 py-2 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={addMutation.isPending || !email.trim()}
-              className="px-4 py-2 bg-sky-600 text-white rounded-lg text-sm font-medium hover:bg-sky-700 disabled:opacity-50"
+              className="px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 disabled:opacity-50 transition-colors shadow-xs"
             >
               {addMutation.isPending ? 'Adding...' : 'Add Member'}
             </button>

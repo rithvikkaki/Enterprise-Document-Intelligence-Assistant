@@ -52,3 +52,8 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+
+# Cloudflare & Bundles
+.wrangler/
+frontend/dist.zip
+*.log

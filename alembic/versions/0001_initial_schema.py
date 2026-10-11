@@ -95,6 +95,7 @@ def upgrade() -> None:
         sa.Column('file_size', sa.BigInteger(), nullable=False),
         sa.Column('mime_type', sa.String(128), nullable=False),
         sa.Column('checksum', sa.String(64), nullable=False),
+        sa.Column('idempotency_key', sa.String(255), nullable=True, index=True),
         sa.Column('uploaded_by_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('users.id', ondelete='CASCADE'), nullable=False),
         sa.Column('processing_status', sa.Enum('UPLOADED', 'QUEUED', 'PROCESSING', 'EXTRACTING', 'OCR_PROCESSING', 'NORMALIZING', 'LANGUAGE_DETECTION', 'CHUNKING', 'EMBEDDING', 'INDEXING', 'COMPLETED', 'FAILED', name='processingstatusenum'), nullable=False, server_default='UPLOADED'),
         sa.Column('detected_language', sa.String(10), nullable=True),

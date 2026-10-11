@@ -45,3 +45,29 @@ async def test_invalid_login(async_client: AsyncClient):
     }
     res = await async_client.post("/api/v1/auth/login", json=login_payload)
     assert res.status_code == 401
+
+
+def test_production_secrets_validation():
+    from app.core.config import Settings
+
+    # Production environment with default secret must fail validation
+    with pytest.raises(ValueError, match="Insecure default SECRET_KEY"):
+        Settings(ENVIRONMENT="production", SECRET_KEY="change_this_to_a_secure_random_secret_key_in_production")
+
+    # Production environment with default JWT secret must fail validation
+    with pytest.raises(ValueError, match="Insecure default JWT_SECRET_KEY"):
+        Settings(ENVIRONMENT="production", SECRET_KEY="strong_custom_secret", JWT_SECRET_KEY="super_secret_jwt_key_please_change_in_production")
+
+
+def test_cors_origins_configuration():
+    from app.core.config import Settings
+
+    # Test comma-separated string parsing
+    s1 = Settings(CORS_ORIGINS="https://app.pages.dev, https://corp.com")
+    assert s1.CORS_ORIGINS == ["https://app.pages.dev", "https://corp.com"]
+
+    # Test list parsing
+    s2 = Settings(CORS_ORIGINS=["https://custom.domain.com"])
+    assert s2.CORS_ORIGINS == ["https://custom.domain.com"]
+
+

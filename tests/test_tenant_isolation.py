@@ -62,3 +62,23 @@ async def test_cross_tenant_access_denied(
     )
     assert res_keys.status_code == 403
 
+    # 8. User A tries to execute hybrid search in Organization B -> MUST FAIL
+    res_search = await async_client.get(
+        f"/api/v1/search?organization_id={org_b.id}&project_id={org_b.id}&query=confidential",
+        headers=auth_headers_a,
+    )
+    assert res_search.status_code == 403
+
+    # 9. User A tries to chat/RAG with Organization B -> MUST FAIL
+    res_chat = await async_client.post(
+        "/api/v1/chat",
+        json={
+            "organization_id": str(org_b.id),
+            "project_id": str(org_b.id),
+            "question": "What are organization B's trade secrets?",
+        },
+        headers=auth_headers_a,
+    )
+    assert res_chat.status_code == 403
+
+
