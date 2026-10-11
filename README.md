@@ -14,8 +14,8 @@
 | Service / Interface | Live URL | Description | Ongoing Cost |
 | :--- | :--- | :--- | :---: |
 | **Production Web UI** | [https://enterprise-document-intelligence.pages.dev](https://enterprise-document-intelligence.pages.dev) | Responsive (Mobile & Laptop) Executive Dashboard | **₹0 Forever** |
+| **Cloud Backend API (24/7)** | [https://enterprise-document-intelligence-lnle.onrender.com/docs](https://enterprise-document-intelligence-lnle.onrender.com/docs) | 24/7 Live FastAPI Backend on Render Cloud | **₹0 Forever** |
 | **Direct Authentication** | [https://enterprise-document-intelligence.pages.dev/login](https://enterprise-document-intelligence.pages.dev/login) | Argon2id + JWT Secure Login & Registration | **₹0 Forever** |
-| **Deployment Alias** | [https://84557472.enterprise-document-intelligence.pages.dev](https://84557472.enterprise-document-intelligence.pages.dev) | Immutable Production Build Alias | **Included** |
 | **Vector DB (Supabase)** | [Database Dashboard](https://supabase.com/dashboard/project/aeseryhjqjcsxprrmoib) | PostgreSQL 16 + native `pgvector` in `ap-south-1` Mumbai | **₹0 Forever** |
 | **Fast LLM Inference** | [Groq Cloud Console](https://console.groq.com/home) | Sub-500ms RAG answer synthesis (`openai/gpt-oss-20b`) | **₹0 Free Tier** |
 | **Local Backend API** | `http://127.0.0.1:8000/docs` | Interactive OpenAPI 3.1 Swagger & ReDoc UI | **Local** |
