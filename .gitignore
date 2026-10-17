@@ -41,7 +41,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # Storage & Database
-storage/
+/storage/
 *.sqlite3
 *.db
 
