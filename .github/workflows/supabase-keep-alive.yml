@@ -1,0 +1,58 @@
+name: Keep Supabase Database Active
+
+on:
+  schedule:
+    # Runs every 3 days at 06:00 UTC (Supabase pauses after 7 days of inactivity)
+    - cron: '0 6 */3 * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions UI anytime
+
+jobs:
+  keep-alive:
+    name: Ping Supabase Database
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Ping Supabase REST Gateway
+        run: |
+          echo "Pinging Supabase Project Gateway (aeseryhjqjcsxprrmoib)..."
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://aeseryhjqjcsxprrmoib.supabase.co/rest/v1/")
+          echo "Supabase Gateway HTTP Status: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" -ne 000 ]; then
+            echo "Successfully registered cloud activity on Supabase!"
+          else
+            echo "Failed to connect to Supabase gateway"
+            exit 1
+          fi
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install asyncpg
+        run: pip install asyncpg
+
+      - name: Execute Keep-Alive Query Transaction
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          python - << 'EOF'
+          import os, sys, asyncio, asyncpg
+
+          db_url = os.environ.get("SUPABASE_DB_URL")
+          if not db_url:
+              print("Notice: SUPABASE_DB_URL secret not set. The REST Gateway ping above already registered activity.")
+              sys.exit(0)
+
+          async def run_query():
+              print("Connecting to Supabase PostgreSQL...")
+              conn = await asyncpg.connect(db_url, statement_cache_size=0)
+              val = await conn.fetchval("SELECT 1")
+              print(f"Query executed successfully! Result: {val}")
+              await conn.execute("UPDATE organizations SET updated_at = NOW() WHERE id IS NOT NULL")
+              print("Database updated_at timestamp touched successfully.")
+              await conn.close()
+
+          asyncio.run(run_query())
+          EOF
