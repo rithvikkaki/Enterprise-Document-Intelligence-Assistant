@@ -47,7 +47,8 @@ jobs:
 
           async def run_query():
               print("Connecting to Supabase PostgreSQL...")
-              conn = await asyncpg.connect(db_url, statement_cache_size=0)
+              clean_url = db_url.replace("postgresql+asyncpg://", "postgresql://")
+              conn = await asyncpg.connect(clean_url, statement_cache_size=0)
               val = await conn.fetchval("SELECT 1")
               print(f"Query executed successfully! Result: {val}")
               await conn.execute("UPDATE organizations SET updated_at = NOW() WHERE id IS NOT NULL")
